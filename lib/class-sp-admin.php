@@ -91,10 +91,16 @@ class SP_Admin {
 					<input type="hidden" name="action" value="sp_settings" />
 					<?php wp_nonce_field( 'sp_settings', 'sp_settings_nonce' ); ?>
 					<p>
-						<input type="text" name="sp_host" value="<?php echo esc_url( SP_Config()->get_setting( 'host' ) ) ?>" style="width:100%;max-width:500px" />
+						<label for="sp_host">Host <input type="text" name="sp_host" value="<?php echo esc_url( SP_Config()->get_setting( 'host' ) ) ?>" style="width:100%;max-width:500px" /></label>
 					</p>
 					<p>
-						<label for="sp_reindex"><input type="checkbox" name="sp_reindex" id="sp_reindex" value="1" /> <?php esc_html_e( 'Immediately initiate a full sync', 'searchpress' ); ?>
+						<label for="sp_user">User <input type="text" name="sp_user" value="<?php echo SP_Config()->get_setting( 'user' ) ?>" style="width:100%;max-width:500px" /></label>
+					</p>
+					<p>
+						<label for="sp_password">Password <input type="text" name="sp_password" value="<?php echo SP_Config()->get_setting( 'password' ) ?>" style="width:100%;max-width:500px" /></label>
+					</p>
+					<p>
+						<label for="sp_reindex"><input type="checkbox" name="sp_reindex" id="sp_reindex" value="1" /></label> <?php esc_html_e( 'Immediately initiate a full sync', 'searchpress' ); ?>
 					</p>
 					<?php submit_button( __( 'Save Settings', 'searchpress' ), 'primary' ) ?>
 				</form>
@@ -187,6 +193,12 @@ class SP_Admin {
 		} else {
 			if ( isset( $_POST['sp_host'] ) ) {
 				SP_Config()->update_settings( array( 'host' => esc_url( $_POST['sp_host'] ) ) );
+			}
+			if ( isset( $_POST['sp_user'] ) ) {
+				SP_Config()->update_settings( array( 'user' => $_POST['sp_user'] ) );
+			}
+			if ( isset( $_POST['sp_password'] ) ) {
+				SP_Config()->update_settings( array( 'password' => $_POST['sp_password'] ) );
 			}
 			if ( isset( $_POST['sp_reindex'] ) && '1' == $_POST['sp_reindex'] ) {
 				# The full sync process checks the nonce, so we have to insert it into the postdata

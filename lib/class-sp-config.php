@@ -262,6 +262,8 @@ class SP_Config {
 		$settings = get_option( 'sp_settings' );
 		$this->settings = wp_parse_args( $settings, array(
 			'host'      => 'http://localhost:9200',
+			'user'      => false,
+			'password'  => false,
 			'must_init' => true,
 			'active'    => false,
 			'last_beat' => false

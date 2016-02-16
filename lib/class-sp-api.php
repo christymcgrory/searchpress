@@ -57,12 +57,18 @@ class SP_API {
 		$url = get_site_url();
 		$this->index = preg_replace( '#^.*?//(.*?)/?$#', '$1', $url );
 		$this->host = SP_Config()->get_setting( 'host' );
+		$this->user = SP_Config()->get_setting( 'user' );
+		$this->password = SP_Config()->get_setting( 'password' );
 		$this->request_defaults = array(
 			'sslverify'          => false,
 			'timeout'            => 10,
 			'user-agent'         => 'SearchPress 0.1 for WordPress',
 			'reject_unsafe_urls' => false
 		);
+
+		if ( $this->user && $this->password ) {
+			$this->request_defaults['headers']['Authorization'] = 'Basic ' . base64_encode( sprintf( '%s:%s', $this->user, $this->password ) );
+		}
 
 		# Increase the timeout for bulk indexing
 		if ( ( defined( 'DOING_CRON' ) && DOING_CRON ) || defined( 'WP_CLI' ) && WP_CLI ) {

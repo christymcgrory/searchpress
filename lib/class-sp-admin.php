@@ -11,6 +11,16 @@ class SP_Admin {
 	private static $instance;
 
 	/**
+	 * Taxonomy query to be used by WP_Query.
+	 */
+	private $tax_query;
+
+	/**
+	 * WP_Query.
+	 */
+	private $query;
+
+	/**
 	 * @codeCoverageIgnore
 	 */
 	private function __construct() {
@@ -40,15 +50,49 @@ class SP_Admin {
 		add_action( 'admin_post_sp_full_sync',   array( $this, 'full_sync' )      );
 		add_action( 'admin_post_sp_cancel_sync', array( $this, 'cancel_sync' )    );
 		add_action( 'admin_post_sp_settings',    array( $this, 'save_settings' )  );
-		add_action( 'admin_post_sp_clear_log',   array( $this, 'clear_log' )  );
+		add_action( 'admin_post_sp_clear_log',   array( $this, 'clear_log' )      );
 		add_action( 'wp_ajax_sp_sync_status',    array( $this, 'sp_sync_status' ) );
 		add_action( 'admin_notices',             array( $this, 'admin_notices' )  );
 		add_action( 'admin_enqueue_scripts',     array( $this, 'assets' )         );
+		add_action( 'parse_query',               array( $this, 'modify_query' )   );
 	}
 
+	/**
+	 * Modify $query if custom filters present
+	 * on the post list view
+	 *
+	 * @param WP_Query $query
+	 * @access public
+	 * @return void
+	 */
+	public function modify_query( $query ) {
+		global $pagenow;
+		global $post_type;
+		if ( 'edit.php' == $pagenow && 'post' == $post_type && is_admin() ) {
+			if ( SP_Config()->get_setting( 'admin_search' ) ) {
+				print '<h1 style="margin-left: 250px; margin-top: 200px;">DEBUG SEARCHPRESS ADMIN</h1>';
+				error_log( "SP modify query from action" );
+				$this->query = $query;
+				//$this->query->query_vars['post_status'] = sanitize_text_field( $_GET['dfm_post_status'] );
+				//error_log( var_export( $this->query, true ) );
+				//print '<pre style="margin-left: 250px; margin-top: 20px;">';
+				//set_query_var( 'post_status', 'publish' );
+				//global $wp_query;
+				//print_r( var_export( $wp_query->query_vars, true ) );
+				//print_r( $this->query );
+				//print '</pre>';
+
+				//unset( $this->query->query_vars['post_status'] );
+				//$this->query->query_vars['post_status'] = 'draft';
+			} else {
+				print '<h1 style="margin-left: 250px; margin-top: 200px;">DEBUG REGULAR SEARCH ADMIN</h1>';
+			}
+		}
+	}
 
 	public function admin_menu() {
 		// Add new admin menu and save returned page hook
+		error_log( "SP_Admin admin_menu" );
 		$hook_suffix = add_management_page( __( 'SearchPress', 'searchpress' ), __( 'SearchPress', 'searchpress' ), 'manage_options', 'searchpress', array( $this, 'sync' ) );
 	}
 
@@ -95,6 +139,9 @@ class SP_Admin {
 					</p>
 					<p>
 						<label for="sp_reindex"><input type="checkbox" name="sp_reindex" id="sp_reindex" value="1" /> <?php esc_html_e( 'Immediately initiate a full sync', 'searchpress' ); ?>
+					</p>
+					<p>
+						<label for="sp_admin_search"><input type="checkbox" name="sp_admin_search" id="sp_admin_search" value="1" <?php checked( SP_Config()->get_setting( 'admin_search' ) ) ?>" /> <?php esc_html_e( 'SearchPress for posts in admin', 'searchpress' ); ?>
 					</p>
 					<?php submit_button( __( 'Save Settings', 'searchpress' ), 'primary' ) ?>
 				</form>
@@ -195,6 +242,7 @@ class SP_Admin {
 			} else {
 				wp_redirect( admin_url( 'tools.php?page=searchpress&save=1' ) );
 			}
+			SP_Config()->update_settings( array( 'admin_search' => esc_attr( $_POST['sp_admin_search'] ) ) );
 		}
 
 		exit;

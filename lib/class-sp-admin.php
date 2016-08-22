@@ -54,55 +54,72 @@ class SP_Admin {
 		add_action( 'wp_ajax_sp_sync_status',    array( $this, 'sp_sync_status' ) );
 		add_action( 'admin_notices',             array( $this, 'admin_notices' )  );
 		add_action( 'admin_enqueue_scripts',     array( $this, 'assets' )         );
-		//add_action( 'parse_query',               array( $this, 'modify_query' )   );
+		add_action( 'parse_query',               array( $this, 'modify_query' )   );
 		add_filter( 'posts_request',             array( $this, 'filter__posts_request' ), 5, 2 );
 	}
 
-	public function filter__posts_request( $sql, &$query ) {
-		global $wpdb;
+	/**
+	 * Checks if admin search is enabled.
+	 *
+	 * @access private
+	 * @return boolean
+	 */
+	private function is_admin_search() {
 		global $pagenow;
 		global $post_type;
+		if ( $this->query->is_search() && $this->query->is_main_query() && 'edit.php' == $pagenow && 'post' == $post_type && is_admin() && SP_Config()->get_setting( 'admin_search' ) ) {
+			return true;
+		}
+		return false;
+	}
 
-		if ( $query->is_search() && 'edit.php' == $pagenow && 'post' == $post_type && is_admin() && SP_Config()->get_setting( 'admin_search' ) ) {
-			error_log('=========== filter_posts_request for admin_search ========');
-			return '';
+	/**
+	 * Fires after the main query vars have been parsed.
+	 *
+	 * @param object $wp_query The current WP_Query. Passed by reference and modified if necessary.
+	 * @access public
+	 * @return void
+	 */
+	public function modify_query( &$wp_query ) {
+		$this->query = $wp_query;
+		if ( $this->is_admin_search() ) {
+			error_log( "============ SP modify query for admin_search =============" );
+			//$this->query->query_vars['post_status'] = sanitize_text_field( $_GET['dfm_post_status'] );
+			//error_log( var_export( $this->query, true ) );
+			//print '<pre style="margin-left: 250px; margin-top: 20px;">';
+			//set_query_var( 'post_status', 'publish' );
+			//global $wp_query;
+			//print_r( var_export( $wp_query->query_vars, true ) );
+			//print_r( $this->query );
+			//print '</pre>';
+			//unset( $this->query->query_vars['post_status'] );
+			//$this->query->query_vars['post_status'] = 'draft';
+		}
+	}
+
+	/**
+	 * Filter the completed SQL query before sending.
+	 * on the post list view
+	 *
+	 * @param array $sql The complete SQL query.
+	 * @param object $wp_query The current WP_Query. Passed by reference and modified if necessary.
+	 * @access public
+	 * @return void
+	 */
+	public function filter__posts_request( $sql, &$wp_query ) {
+		global $wpdb;
+		$this->query = $wp_query;
+
+		if ( $this->is_admin_search() ) {
+			error_log('=========== SP filter_posts_request for admin_search ========');
+			print '<p style="margin: 200px; width: 1200px; border: 1px solid red;">';
+			print $sql;
+			print '</p>';
+			return $sql;
 		} else {
 			return $sql;
 		}
 	}
-
-	///**
-	// * Modify $query if custom filters present
-	// * on the post list view
-	// *
-	// * @param WP_Query $query
-	// * @access public
-	// * @return void
-	// */
-	//public function modify_query( $query ) {
-	//	global $pagenow;
-	//	global $post_type;
-	//	if ( 'edit.php' == $pagenow && 'post' == $post_type && is_admin() ) {
-	//		if ( SP_Config()->get_setting( 'admin_search' ) ) {
-	//			print '<h1 style="margin-left: 250px; margin-top: 200px;">DEBUG SEARCHPRESS ADMIN</h1>';
-	//			error_log( "SP modify query from action" );
-	//			$this->query = $query;
-	//			//$this->query->query_vars['post_status'] = sanitize_text_field( $_GET['dfm_post_status'] );
-	//			//error_log( var_export( $this->query, true ) );
-	//			//print '<pre style="margin-left: 250px; margin-top: 20px;">';
-	//			//set_query_var( 'post_status', 'publish' );
-	//			//global $wp_query;
-	//			//print_r( var_export( $wp_query->query_vars, true ) );
-	//			//print_r( $this->query );
-	//			//print '</pre>';
-
-	//			//unset( $this->query->query_vars['post_status'] );
-	//			//$this->query->query_vars['post_status'] = 'draft';
-	//		} else {
-	//			print '<h1 style="margin-left: 250px; margin-top: 200px;">DEBUG REGULAR SEARCH ADMIN</h1>';
-	//		}
-	//	}
-	//}
 
 	public function admin_menu() {
 		// Add new admin menu and save returned page hook

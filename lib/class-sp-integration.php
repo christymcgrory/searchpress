@@ -163,7 +163,6 @@ class SP_Integration {
 
 	public function filter__posts_request( $sql, &$query ) {
 		global $wpdb;
-		error_log("=================== FILTER__POSTS_REQUEST==============");
 
 		if ( ! $query->is_main_query() || ! $query->is_search() ) {
 			return $sql;

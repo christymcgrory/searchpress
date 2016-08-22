@@ -98,6 +98,7 @@ class SP_Integration {
 		add_action( 'parse_query',         array( $this, 'force_search_template' ), 5 );
 	}
 
+
 	public function remove_hooks() {
 		remove_filter( 'post_limits_request', array( $this, 'filter__post_limits_request' ), 999, 2 );
 		remove_filter( 'posts_request',       array( $this, 'filter__posts_request' ),         5, 2 );

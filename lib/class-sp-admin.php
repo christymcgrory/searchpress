@@ -46,10 +46,12 @@ class SP_Admin {
 		add_action( 'admin_enqueue_scripts',     array( $this, 'assets' )         );
 	}
 
+
 	public function admin_menu() {
 		// Add new admin menu and save returned page hook
 		$hook_suffix = add_management_page( __( 'SearchPress', 'searchpress' ), __( 'SearchPress', 'searchpress' ), 'manage_options', 'searchpress', array( $this, 'sync' ) );
 	}
+
 
 	public function sync() {
 		if ( !current_user_can( 'manage_options' ) ) {

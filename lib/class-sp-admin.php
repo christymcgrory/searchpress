@@ -11,16 +11,6 @@ class SP_Admin {
 	private static $instance;
 
 	/**
-	 * Taxonomy query to be used by WP_Query.
-	 */
-	private $tax_query;
-
-	/**
-	 * WP_Query.
-	 */
-	private $query;
-
-	/**
 	 * @codeCoverageIgnore
 	 */
 	private function __construct() {

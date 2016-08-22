@@ -73,7 +73,7 @@ class SP_Integration {
 	 * @codeCoverageIgnore
 	 */
 	public function setup() {
-		if ( ! is_admin() && SP_Config()->active() ) {
+		if ( SP_Config()->active() ) {
 			$this->init_hooks();
 		}
 	}
@@ -98,7 +98,6 @@ class SP_Integration {
 		add_action( 'parse_query',         array( $this, 'force_search_template' ), 5 );
 	}
 
-
 	public function remove_hooks() {
 		remove_filter( 'post_limits_request', array( $this, 'filter__post_limits_request' ), 999, 2 );
 		remove_filter( 'posts_request',       array( $this, 'filter__posts_request' ),         5, 2 );
@@ -106,6 +105,22 @@ class SP_Integration {
 		remove_filter( 'found_posts',         array( $this, 'filter__found_posts' ),           5, 2 );
 		remove_filter( 'query_vars',          array( $this, 'query_vars' ) );
 		remove_action( 'parse_query',         array( $this, 'force_search_template' ), 5 );
+	}
+
+
+	/**
+	 * Checks if admin search is enabled.
+	 *
+	 * @access private
+	 * @return boolean
+	 */
+	private function is_admin_search() {
+		global $pagenow;
+		global $post_type;
+		if ( 'edit.php' == $pagenow && 'post' == $post_type && SP_Config()->get_setting( 'admin_search' ) ) {
+			return true;
+		}
+		return false;
 	}
 
 
@@ -147,7 +162,7 @@ class SP_Integration {
 
 
 	public function filter__post_limits_request( $limits, $query ) {
-		if ( ! $query->is_search() ) {
+		if ( ! $query->is_search() || ( is_admin() && ! $this->is_admin_search() ) ) {
 			return $limits;
 		}
 
@@ -164,7 +179,7 @@ class SP_Integration {
 	public function filter__posts_request( $sql, &$query ) {
 		global $wpdb;
 
-		if ( ! $query->is_main_query() || ! $query->is_search() ) {
+		if ( ! $query->is_main_query() || ! $query->is_search() || ( is_admin() && ! $this->is_admin_search() ) ) {
 			return $sql;
 		}
 
@@ -198,7 +213,7 @@ class SP_Integration {
 
 
 	public function filter__found_posts_query( $sql, $query ) {
-		if ( ! $query->is_main_query() || ! $query->is_search() ) {
+		if ( ! $query->is_main_query() || ! $query->is_search() || ( is_admin() && ! $this->is_admin_search() ) ) {
 			return $sql;
 		}
 
@@ -207,7 +222,7 @@ class SP_Integration {
 
 
 	public function filter__found_posts( $found_posts, $query ) {
-		if ( ! $query->is_main_query() || ! $query->is_search() ) {
+		if ( ! $query->is_main_query() || ! $query->is_search() || ( is_admin() && ! $this->is_admin_search() ) ) {
 			return $found_posts;
 		}
 

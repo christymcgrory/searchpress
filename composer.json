@@ -8,5 +8,6 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {}
+    "require": {},
+    "license": "GPL-2.0"
 }

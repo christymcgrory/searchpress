@@ -1,0 +1,12 @@
+{
+    "name": "christymcgrory/searchpress",
+    "type": "wordpress-plugin",
+    "authors": [
+        {
+            "name": "Christy McGrory",
+            "email": "christy.mcgrory@rs-components.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
